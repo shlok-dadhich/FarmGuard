@@ -1,0 +1,7 @@
+gradcam_pp: {enabled: true, eig_smooth: false}
+scorecam: {enabled: true, max_masks: 32, batch_size: 8}
+faithfulness:
+  pointing_game_enabled: true
+  mask_dir_pattern: data/raw/{crop}/masks
+overlay: {colormap: jet, alpha: 0.45}
+output_dir: outputs/xai

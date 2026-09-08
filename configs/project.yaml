@@ -1,0 +1,15 @@
+project_name: AgroVision
+version: 0.1.0
+seed: 42
+device: auto  # auto | cpu | cuda
+image_size: 224
+num_workers: 2
+output_dir: outputs
+data_dir: data
+checkpoint_dir: outputs/checkpoints
+demo_mode: true
+tracking:
+  backend: file  # file | mlflow | both
+  experiment: agrovision
+  mlflow_uri: ./outputs/mlruns
+  log_artifacts: true

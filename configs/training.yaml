@@ -1,0 +1,10 @@
+mode: screening  # screening | full
+screening: {epochs: 3, seeds: [42]}
+full: {epochs: 25, seeds: [42, 123, 999]}
+optimizer: {family: adamw, lr: 0.0003, weight_decay: 0.05}
+scheduler: {family: cosine, t_max: 25, min_lr: 1.0e-06}
+loss: {family: cross_entropy, label_smoothing: 0.0, class_weighting: false}
+batch_size: 32
+mixed_precision: true
+early_stopping: {patience: 7, metric: val_macro_f1, mode: max}
+val_every: 1

@@ -1,0 +1,8 @@
+provider: fallback  # fallback | openai_compatible | mock
+openai_compatible:
+  base_url: ${AI_BASE_URL:}
+  api_key_env: AI_API_KEY
+  model: ${AI_MODEL:gpt-4o-mini}
+  timeout_s: 30
+disclaimer: AI explanation is assistive only and never overrides the classifier. Not agronomic certainty.
+max_tokens: 600

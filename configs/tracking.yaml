@@ -1,0 +1,10 @@
+# AgroVision experiment tracking.
+# Backend options: file (default, zero-dependency), mlflow (optional), both.
+backend: file
+experiment: agrovision
+file_store: outputs/metrics
+mlflow_uri: ./outputs/mlruns
+tensorboard_dir: outputs/tb
+log_artifacts: true
+log_confusion_matrix: true
+log_figures: true

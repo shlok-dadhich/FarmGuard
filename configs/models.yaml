@@ -1,0 +1,42 @@
+default_crop_num_classes: 4
+models:
+  efficientnet_v2_s:
+    family: efficientnet
+    timm_name: efficientnetv2_s
+    torchvision_name: efficientnet_v2_s
+    input_size: 224
+    adapter: src.models.adapters.efficientnet:EfficientNetV2SAdapter
+    description: EfficientNetV2-S (external weights supplied separately)
+  resnet50:
+    family: resnet
+    timm_name: resnet50
+    torchvision_name: resnet50
+    input_size: 224
+    adapter: src.models.adapters.resnet:ResNet50Adapter
+    description: ResNet-50
+  convnext_tiny:
+    family: convnext
+    timm_name: convnext_tiny
+    torchvision_name: convnext_tiny
+    input_size: 224
+    adapter: src.models.adapters.convnext:ConvNeXtTinyAdapter
+    description: ConvNeXt-Tiny
+  regnet_y_4gf:
+    family: regnet
+    timm_name: regnety_040
+    torchvision_name: regnet_y_4gf
+    input_size: 224
+    adapter: src.models.adapters.regnet:RegNetY4GFAdapter
+    description: RegNetY-4GF
+  densenet121:
+    family: densenet
+    timm_name: densenet121
+    torchvision_name: densenet121
+    input_size: 224
+    adapter: src.models.adapters.densenet:DenseNet121Adapter
+    description: DenseNet-121
+  mock_demo:
+    family: mock
+    input_size: 64
+    adapter: src.models.mock:MockDemoAdapter
+    description: Tiny deterministic demo/test model. NEVER for research.
