@@ -25,5 +25,11 @@ def run_xai(model, adapter, pil_img, input_tensor, out_dir="outputs/xai", method
         vis = overlay(orig, cam)
         Image.fromarray(vis).save(out / f"xai_{ts}_scorecam_c{c}.jpg")
         results["scorecam"] = {"class": c, "file": f"xai_{ts}_scorecam_c{c}.jpg"}
+    if "saliency" in methods:
+        from src.explainability.saliency import Saliency
+        cam, c = Saliency(model)(input_tensor, class_idx)
+        vis = overlay(orig, cam)
+        Image.fromarray(vis).save(out / f"xai_{ts}_saliency_c{c}.jpg")
+        results["saliency"] = {"class": c, "file": f"xai_{ts}_saliency_c{c}.jpg"}
     (out / f"xai_{ts}_meta.json").write_text(json.dumps({**(meta or {}), **results, "timestamp": ts}, indent=2))
-    return results
+    return results

@@ -1,4 +1,30 @@
+# AgroVision model configuration.
+#
+# Section 1 - `models:` : architecture REGISTRY (how to build each architecture).
+#   Adding a *new architecture* requires an adapter in src/models/adapters/ and a
+#   registry entry (see docs/model_integration.md). Existing architectures need
+#   NO code changes to use new checkpoints.
+#
+# Section 2 - `instances:` : OPTIONAL per-model configuration binding a concrete
+#   checkpoint + crop + class mapping to an architecture. This is how a user
+#   registers a trained model by editing YAML instead of Python.
+#
+#   - id           unique key used by the UI/CLI (required)
+#   - name         display name (optional, defaults to id)
+#   - architecture key from the `models:` registry (required)
+#   - crop         crop this model was trained for; must exist in configs/datasets.yaml
+#                  (or `crops:` with a list)
+#   - checkpoint   path to the trained weights (optional; when absent the app
+#                  auto-discovers models/checkpoints/<crop>_<arch>*.pt and
+#                  outputs/checkpoints/<crop>_<arch>*.pt)
+#   - classes_file path to a YAML file with a `classes:` list (optional; when
+#                  absent class names come from data/splits/<crop>/*.csv manifests,
+#                  then datasets.yaml -> crops.<crop>.classes)
+#   - input_size   inference input size (optional; defaults to the adapter's size)
+#   - target_layer optional XAI target layer (default "auto" -> adapter resolves it)
+
 default_crop_num_classes: 4
+
 models:
   efficientnet_v2_s:
     family: efficientnet
@@ -40,3 +66,27 @@ models:
     input_size: 64
     adapter: src.models.mock:MockDemoAdapter
     description: Tiny deterministic demo/test model. NEVER for research.
+
+# ---------------------------------------------------------------------------
+# instances:
+#   # Example 1: a real checkpoint supplied by the user.
+#   - id: efficientnet_crop1
+#     name: EfficientNetV2-S (crop1)
+#     architecture: efficientnet_v2_s
+#     crop: tomato
+#     checkpoint: models/checkpoints/tomato/efficientnet_v2_s.pt
+#     classes_file: configs/classes/tomato.yaml
+#     input_size: 224
+#     target_layer: auto
+#
+#   # Example 2: no explicit checkpoint -> auto-discovery under models/checkpoints/.
+#   - id: resnet_crop1
+#     name: ResNet-50 (crop1)
+#     architecture: resnet50
+#     crop: tomato
+#     classes_file: configs/classes/tomato.yaml
+#
+# When `instances:` is absent or empty, the app offers all registered
+# architectures and auto-discovers checkpoints (classic behaviour).
+# ---------------------------------------------------------------------------
+# instances: []
