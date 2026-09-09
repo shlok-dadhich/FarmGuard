@@ -44,10 +44,13 @@ def get_crops() -> list:
 
 @st.cache_data(show_spinner=False)
 def get_architectures() -> list:
+    """Registered research architectures (mock_demo is a plumbing-only model and is
+    excluded from the UI so no dummy option is ever offered)."""
     try:
-        return list(load_app_config().models_cfg.get("models", {}).keys())
+        archs = list(load_app_config().models_cfg.get("models", {}).keys())
     except Exception:
-        return ["mock_demo"]
+        archs = []
+    return [a for a in archs if a != "mock_demo"]
 
 
 # ---------------------------------------------------------------- model instances
@@ -64,7 +67,8 @@ def get_model_specs() -> list:
 
 def get_model_choices(crop: str) -> list:
     """Model keys offered for a crop: configured instance ids when instances exist,
-    otherwise all registered architectures (classic behaviour)."""
+    otherwise all registered architectures (classic behaviour). mock_demo is never
+    offered — real checkpoints are the only options."""
     specs = get_model_specs()
     inst = [s.id for s in specs if crop in s.crops]
     if inst:
@@ -180,15 +184,36 @@ def load_runs_table() -> pd.DataFrame:
 
 @st.cache_data(show_spinner=False)
 def load_eval_record(crop: str, arch: str) -> dict:
+    """Eval JSON for (crop, arch). Demo records (old smoke evaluations) are
+    treated as unavailable so the frontend never shows dummy metrics."""
     import json
 
     p = REPO_ROOT / "outputs" / "metrics" / f"eval_{crop}_{arch}.json"
     if not p.exists():
         return {}
     try:
-        return json.loads(p.read_text())
+        rec = json.loads(p.read_text())
     except Exception:
         return {}
+    if str(rec.get("status", "")).lower() in ("demo", "test") or rec.get("demo"):
+        return {}
+    return rec
+
+
+def research_runs(runs: pd.DataFrame) -> pd.DataFrame:
+    """Keep only real research runs: drop demo/test evaluations and mock models.
+    History stays append-only; this is a display filter only."""
+    df = runs.copy()
+    if df.empty:
+        return df
+    for col in ("status", "kind"):
+        if col not in df.columns:
+            df[col] = ""
+    df = df[~df["status"].astype(str).str.lower().isin({"demo", "test"})]
+    df = df[~df["kind"].astype(str).str.lower().isin({"demo", "test"})]
+    if "architecture" in df.columns:
+        df = df[df["architecture"].astype(str) != "mock_demo"]
+    return df.reset_index(drop=True)
 
 
 @st.cache_data(show_spinner=False)
@@ -234,6 +259,14 @@ def predict_pil(model, class_names: list, pil_img, device: str, demo: bool, arch
 
 XAI_METHODS = ("gradcam_pp", "scorecam", "saliency")
 
+XAI_METHOD_LABELS = {"gradcam_pp": "Grad-CAM++", "scorecam": "Score-CAM", "saliency": "Saliency"}
+
+
+def explained_class_label(method: str, class_names: list, cls_idx) -> str:
+    """Human-readable XAI caption: method + explained class name."""
+    name = class_names[cls_idx] if 0 <= cls_idx < len(class_names) else str(cls_idx)
+    return f"{XAI_METHOD_LABELS.get(method, method)} — {name}"
+
 
 def compute_cam(model, adapter, tensor, method: str = "gradcam_pp", class_idx=None, max_masks: int = 16):
     """Return (heatmap np.ndarray in [0,1], class_idx). Raises XAIError-style RuntimeError on failure."""
@@ -242,6 +275,11 @@ def compute_cam(model, adapter, tensor, method: str = "gradcam_pp", class_idx=No
     model.eval()
     layer = resolve_target_layers(adapter, model)[-1]
     try:
+        # Match the input device to the model (pages preprocess on CPU; the model
+        # may live on CUDA) — otherwise every CAM method fails with a device mismatch.
+        device = next(model.parameters()).device
+        if tensor.device != device:
+            tensor = tensor.to(device)
         if method == "scorecam":
             from src.explainability.scorecam import ScoreCAM
 

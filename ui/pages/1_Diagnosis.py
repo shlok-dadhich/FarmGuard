@@ -7,6 +7,7 @@ import streamlit as st
 
 from ui.common import (
     XAI_METHODS,
+    XAI_METHOD_LABELS,
     blend_overlay,
     colorize_cam,
     compute_cam,
@@ -44,7 +45,7 @@ c_left, c_right = st.columns([1, 2])
 with c_left:
     crop = st.selectbox("Crop", crops, key="diag_crop")
     choices = get_model_choices(crop)
-    default_idx = choices.index("mock_demo") if "mock_demo" in choices else 0
+    default_idx = choices.index("tomato_regnet_y_4gf") if "tomato_regnet_y_4gf" in choices else 0
     key = st.selectbox("Model", choices, index=default_idx, key="diag_model",
                        help="Configured model instances (configs/models.yaml -> instances:) and "
                             "registered architectures. External checkpoints load automatically.")
@@ -164,24 +165,31 @@ if res is not None:
 
         img = Image.open(io.BytesIO(upload.getvalue())).convert("RGB")
         ov = blend_overlay(img, cam_res["cam"], alpha=alpha)
+        cls_idx = cam_res["class_idx"]
+        cls_name = res["classes"][cls_idx] if 0 <= cls_idx < len(res["classes"]) else str(cls_idx)
+        probs = pred.get("probs", [])
+        conf = probs[cls_idx] if 0 <= cls_idx < len(probs) else None
+        conf_txt = f" · {cls_name} {conf:.1%}" if conf is not None else f" · {cls_name}"
         o1, o2, o3 = st.columns(3)
-        o1.image(img, caption="Original", width="stretch")
-        o2.image(colorize_cam(cam_res["cam"]), caption=f"Heatmap ({method}, class={cam_res['class_idx']})",
+        o1.image(img, caption="Original image", width="stretch")
+        o2.image(colorize_cam(cam_res["cam"]), caption=f"{XAI_METHOD_LABELS[method]} heatmap{conf_txt}",
                  width="stretch")
-        o3.image(ov, caption=f"Overlay (α={alpha:.2f})", width="stretch")
+        o3.image(ov, caption=f"Overlay on original (α={alpha:.2f})", width="stretch")
         st.markdown(
             "<span class='small-note'>Highlighted regions indicate image areas contributing strongly to "
             "the selected prediction. This is model attribution, not a diagnosis.</span>",
             unsafe_allow_html=True)
         with st.expander("🧬 Target-layer metadata", expanded=False):
             st.json({"model": res["model_name"], "architecture": res["arch"],
-                     "target_layers": cam_res["layers"], "explained_class": cam_res["class_idx"]})
+                     "target_layers": cam_res["layers"], "explained_class": cls_name,
+                     "explained_class_idx": cls_idx})
         if st.button("💾 Save XAI artifact", key="diag_save"):
             try:
                 ip, mp = save_overlay_artifact(ov, {"crop": res["crop"], "model": res["key_model"],
                                                     "architecture": res["arch"],
                                                     "prediction": pred["label"], "confidence": pred["confidence"],
-                                                    "method": method, "target_layers": cam_res["layers"]})
+                                                    "method": method, "explained_class": cls_name,
+                                                    "target_layers": cam_res["layers"]})
                 st.success(f"Saved {ip.name} (+ meta) to outputs/xai/")
             except Exception as e:
                 error_box(e)

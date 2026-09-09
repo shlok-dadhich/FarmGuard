@@ -33,5 +33,13 @@ outputs/figures/
 !outputs/figures/.gitkeep
 outputs/confusion_matrices/
 !outputs/confusion_matrices/.gitkeep
+outputs/colab_validation/
+outputs/experiments/
+outputs/predictions/
+outputs/logs/
 .venv/
 venv/
+.pytest_cache/
+agrovision.egg-info/
+*.egg-info/
+training/**/outputs/

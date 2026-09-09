@@ -98,6 +98,15 @@ def resolve_targets(crop: str | None, models_arg: str | None, cfg) -> list[dict]
                     })
     if models_arg:
         wanted = {m.strip() for m in models_arg.split(",") if m.strip()}
+        # Explicitly requested registered architectures (e.g. --models mock_demo for
+        # plumbing tests) are still resolvable even when instances are configured.
+        covered = {t["key"] for t in targets} | {t["architecture"] for t in targets}
+        for arch in MODEL_REGISTRY:
+            if arch in wanted and arch not in covered:
+                targets.append({
+                    "key": arch, "architecture": arch, "checkpoint": None,
+                    "input_size": get_adapter(arch).input_size(), "name": arch, "crop": crop,
+                })
         targets = [t for t in targets if t["key"] in wanted or t["architecture"] in wanted]
     return targets
 

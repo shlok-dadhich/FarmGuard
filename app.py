@@ -25,6 +25,7 @@ def _home():
             get_device,
             load_app_config,
             load_runs_table,
+            research_runs,
         )
     except Exception as e:
         st.error(f"WHAT: configuration failed to load\nWHY: {e}\nHOW: run from repo root; check configs/*.yaml")
@@ -32,16 +33,18 @@ def _home():
 
     cfg = load_app_config()
     device = get_device()
-    runs = load_runs_table()
+    runs = research_runs(load_runs_table())
     d_info = dataset_info()
 
     if cfg.demo_mode:
         st.warning("DEMO mode is ON (configs/project.yaml). Mock results are clearly labelled and are never research results.")
+    else:
+        st.success("Research mode — real model checkpoints are wired up and demo data is filtered from the UI.")
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Crops", len(get_crops()))
     c2.metric("Architectures", len(get_architectures()))
-    c3.metric("Logged runs", len(runs))
+    c3.metric("Research runs", len(runs))
     c4.metric("Device", device)
 
     with st.expander("📁 Dataset status (manifests)", expanded=False):
@@ -50,9 +53,9 @@ def _home():
         else:
             st.info("UNAVAILABLE RESULT — no split manifests yet. Run: python scripts/prepare_data.py --crop <crop>")
 
-    with st.expander("🔬 Recent runs", expanded=False):
+    with st.expander("🔬 Recent research runs", expanded=False):
         if runs.empty:
-            st.info("UNAVAILABLE RESULT — no runs logged yet. Run: python scripts/train.py --crop tomato --model mock_demo")
+            st.info("UNAVAILABLE RESULT — no research runs logged yet. Evaluate a model from the Model Evaluation page.")
         else:
             cols = [c for c in ("crop", "architecture", "seed", "accuracy", "macro_f1", "run_id") if c in runs.columns]
             st.dataframe(runs[cols].tail(10), width="stretch")
@@ -74,7 +77,7 @@ def _home():
         "pip install -r requirements.txt\n"
         "streamlit run app.py\n"
         "# evaluation pipeline (models from configs/models.yaml -> instances:)\n"
-        "python scripts/run_experiments.py --crop tomato --split test\n"
+        "python scripts/evaluate_all.py --crop tomato --split test\n"
         "python scripts/generate_comparison.py --crop tomato\n"
         "python scripts/smoke_test.py",
         language="bash",

@@ -9,6 +9,7 @@ from PIL import Image
 
 from ui.common import (
     XAI_METHODS,
+    XAI_METHOD_LABELS,
     blend_overlay,
     colorize_cam,
     compute_cam,
@@ -37,7 +38,7 @@ c1, c2 = st.columns([1, 2])
 with c1:
     crop = st.selectbox("Crop", crops, key="xai_crop")
     choices = get_model_choices(crop)
-    default_idx = choices.index("mock_demo") if "mock_demo" in choices else 0
+    default_idx = choices.index("tomato_regnet_y_4gf") if "tomato_regnet_y_4gf" in choices else 0
     key = st.selectbox("Model", choices, index=default_idx, key="xai_model")
     upload = st.file_uploader("Image", type=["jpg", "jpeg", "png", "webp", "bmp"], key="xai_upload")
     true_label = st.text_input("True label (optional, if known)", key="xai_true")
@@ -65,9 +66,11 @@ if run and upload is not None:
             cams = {}
             for m in XAI_METHODS:
                 try:
+                    # success -> (heatmap ndarray, class_idx)
                     cams[m] = compute_cam(model, adapter, tensor, method=m)
                 except Exception as e:
-                    cams[m] = ("error", str(e))
+                    # failure -> dict sentinel (a tuple would collide with success)
+                    cams[m] = {"error": str(e)}
             st.session_state["xai"] = {"pred": pred, "cams": cams, "arch": info["architecture"],
                                        "model_name": info["name"], "crop": crop,
                                        "ckpt": info["checkpoint"], "demo": info["demo"],
@@ -81,15 +84,37 @@ if run and upload is not None:
 res = st.session_state.get("xai")
 if res is None:
     st.info("Upload an image and press **Explain**.")
-    # gallery of past artifacts
+    # gallery of past artifacts (real models only — demo artifacts are filtered out)
+    import json as _json
+    import re as _re
     from pathlib import Path
 
-    files = sorted(str(x) for x in Path("outputs/xai").glob("*.jpg"))[-8:]
-    if files:
-        st.markdown("**Past artifacts (outputs/xai/)**")
+    artifacts = []
+    for jpg in sorted(Path("outputs/xai").glob("*.jpg")):
+        m = _re.search(r"(\d{10})", jpg.name)
+        if not m:
+            continue
+        ts = m.group(1)
+        meta = jpg.parent / f"xai_{ts}_meta.json"
+        if not meta.exists():
+            meta = jpg.parent / f"ui_{ts}_meta.json"
+        if not meta.exists():
+            continue  # unlabeled artifacts belong to the old demo pipeline
+        try:
+            d = _json.loads(meta.read_text())
+            model = str(d.get("model", "") or d.get("architecture", "") or "unknown")
+        except Exception:
+            continue
+        if "mock" in model.lower() or "demo" in model.lower():
+            continue
+        artifacts.append((str(jpg), model))
+    if artifacts:
+        st.markdown("**Saved artifacts from real models (outputs/xai/)**")
         cols = st.columns(4)
-        for i, f in enumerate(files):
-            cols[i % 4].image(f, width="stretch")
+        for i, (f, model) in enumerate(artifacts[-8:]):
+            cols[i % 4].image(f, caption=model, width="stretch")
+    else:
+        st.caption("No XAI artifacts from real models saved yet — press **Explain** and use the download buttons.")
     st.stop()
     raise SystemExit
 
@@ -114,28 +139,44 @@ st.markdown(
 alpha = st.slider("Overlay opacity α", 0.0, 1.0, 0.45, 0.05, key="xai_alpha")
 img = Image.open(io.BytesIO(st.session_state["xai_bytes"])).convert("RGB")
 
-LABELS = {"gradcam_pp": "Grad-CAM++", "scorecam": "Score-CAM", "saliency": "Saliency"}
 cams = res["cams"]
-tabs = st.tabs(["Side-by-side"] + [LABELS[m] for m in XAI_METHODS])
+classes = res.get("classes", [])
+
+
+def _cls_name(idx):
+    return classes[idx] if 0 <= idx < len(classes) else str(idx)
+
+
+ok_methods = [m for m in XAI_METHODS if not isinstance(cams.get(m), dict)]
+st.markdown("### Explained class per method")
+for m in XAI_METHODS:
+    if isinstance(cams.get(m), dict):
+        st.caption(f"{XAI_METHOD_LABELS[m]}: unavailable ({str(cams[m].get('error'))[:90]}…)")
+    else:
+        st.caption(f"{XAI_METHOD_LABELS[m]} → {_cls_name(cams[m][1])}")
+
+tabs = st.tabs(["Side-by-side"] + [XAI_METHOD_LABELS[m] for m in XAI_METHODS])
 for ti, m in enumerate(XAI_METHODS, start=1):
     with tabs[ti]:
-        if isinstance(cams.get(m), tuple):
-            error_box(RuntimeError(cams[m][1]))
+        if isinstance(cams.get(m), dict):
+            error_box(RuntimeError(cams[m].get("error")))
             st.caption("XAI method unavailable for this model — other methods above remain usable.")
         else:
             cam, cls_idx = cams[m]
             a, b, c_ = st.columns(3)
-            a.image(img, caption="Original", width="stretch")
-            b.image(colorize_cam(cam), caption=f"{LABELS[m]} (class {cls_idx})", width="stretch")
-            c_.image(blend_overlay(img, cam, alpha=alpha), caption=f"Overlay α={alpha:.2f}", width="stretch")
+            a.image(img, caption="Original image", width="stretch")
+            b.image(colorize_cam(cam), caption=f"{XAI_METHOD_LABELS[m]} heatmap — {_cls_name(cls_idx)}", width="stretch")
+            c_.image(blend_overlay(img, cam, alpha=alpha),
+                     caption=f"Overlay on original (α={alpha:.2f})", width="stretch")
 with tabs[0]:
-    ok = {m: cams[m] for m in XAI_METHODS if not isinstance(cams.get(m), tuple)}
-    if len(ok) >= 2:
-        cols = st.columns(len(ok))
+    if len(ok_methods) >= 2:
+        cols = st.columns(len(ok_methods))
         first_cls = None
         agree = True
-        for i, (m, (cam, cls_idx)) in enumerate(ok.items()):
-            cols[i].image(blend_overlay(img, cam, alpha=alpha), caption=f"{LABELS[m]} overlay", width="stretch")
+        for i, m in enumerate(ok_methods):
+            cam, cls_idx = cams[m]
+            cols[i].image(blend_overlay(img, cam, alpha=alpha),
+                          caption=f"{XAI_METHOD_LABELS[m]} — {_cls_name(cls_idx)}", width="stretch")
             first_cls = cls_idx if first_cls is None else first_cls
             agree = agree and cls_idx == first_cls
         st.caption("All available methods agree on the explained class — cross-check passes." if agree
@@ -154,7 +195,7 @@ st.caption("Heatmap maximum inside the lesion mask? Requires a binary lesion mas
 mask_up = st.file_uploader("Lesion mask (optional, PNG, white = lesion)", type=["png", "jpg", "jpeg"],
                            key="xai_mask")
 g = cams.get("gradcam_pp")
-if mask_up is not None and not isinstance(g, tuple):
+if mask_up is not None and not isinstance(g, dict):
     try:
         import numpy as np
 

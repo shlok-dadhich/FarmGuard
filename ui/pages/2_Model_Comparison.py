@@ -6,7 +6,7 @@ import json
 import pandas as pd
 import streamlit as st
 
-from ui.common import get_crops, load_eval_record, load_runs_table, unavailable_banner
+from ui.common import get_crops, load_eval_record, load_runs_table, research_runs, unavailable_banner
 from ui.theme import inject
 
 inject()
@@ -17,7 +17,7 @@ if st.button("🔄 Refresh data", key="cmp_refresh"):
     st.cache_data.clear()
     st.rerun()
 
-runs = load_runs_table()
+runs = research_runs(load_runs_table())
 crops = get_crops()
 crop = st.selectbox("Crop", ["(all)"] + crops, key="cmp_crop")
 arch_filter = st.multiselect("Architectures", sorted(runs["architecture"].unique().tolist()) if not runs.empty and "architecture" in runs.columns else [],
@@ -27,7 +27,7 @@ sort_by = st.selectbox("Sort by", ["macro_f1", "accuracy", "f1_per_mparams", "ac
 ascending = st.checkbox("Ascending", value=False, key="cmp_asc")
 
 if runs.empty:
-    unavailable_banner("no runs logged yet. Train first: python scripts/train.py --crop <crop> --model <model> --seed 42")
+    unavailable_banner("no research runs logged yet. Evaluate a model from the Model Evaluation page or run scripts/evaluate_all.py.")
     st.stop()
 
 df = runs.copy()

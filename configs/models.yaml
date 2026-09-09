@@ -69,24 +69,25 @@ models:
 
 # ---------------------------------------------------------------------------
 # instances:
-#   # Example 1: a real checkpoint supplied by the user.
-#   - id: efficientnet_crop1
-#     name: EfficientNetV2-S (crop1)
-#     architecture: efficientnet_v2_s
+#   The previous tomato checkpoints were trained on the OLD 8-class dataset
+#   (Pottassium Deficiency was later removed) and have been deleted along with
+#   their metrics/outputs — they are incompatible with the current 7-class
+#   class mapping (configs/classes/tomato.yaml).
+#
+#   After retraining with training/tomato/training_colab.ipynb on the 7-class
+#   dataset, register the new checkpoints here, e.g.:
+#
+#   - id: tomato_regnet_y_8gf
+#     name: RegNetY-8GF (tomato best)
+#     architecture: regnet_y_8gf          # add a registry entry + adapter first
 #     crop: tomato
-#     checkpoint: models/checkpoints/tomato/efficientnet_v2_s.pt
+#     checkpoint: models/checkpoints/tomato/tomato_regnet_y_8gf_best.pt
 #     classes_file: configs/classes/tomato.yaml
 #     input_size: 224
 #     target_layer: auto
 #
-#   # Example 2: no explicit checkpoint -> auto-discovery under models/checkpoints/.
-#   - id: resnet_crop1
-#     name: ResNet-50 (crop1)
-#     architecture: resnet50
-#     crop: tomato
-#     classes_file: configs/classes/tomato.yaml
-#
-# When `instances:` is absent or empty, the app offers all registered
-# architectures and auto-discovers checkpoints (classic behaviour).
+#   With no instances, the app auto-discovers checkpoints under
+#   models/checkpoints/ and outputs/checkpoints/ and runs in DEMO mode when none
+#   matches the 7-class mapping.
 # ---------------------------------------------------------------------------
-# instances: []
+instances: []

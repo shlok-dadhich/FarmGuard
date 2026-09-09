@@ -16,6 +16,7 @@ from ui.common import (
     get_crops,
     load_app_config,
     load_runs_table,
+    research_runs,
     unavailable_banner,
 )
 from ui.theme import inject
@@ -53,6 +54,9 @@ with st.expander("🔍 Filters", expanded=True):
         date_to = st.text_input("To (YYYY-MM-DD)", key="exp_to")
     with f7:
         id_search = st.text_input("Run id contains", key="exp_id")
+    include_demo = st.checkbox("Include demo/test runs (old smoke evaluations)", value=False, key="exp_demo")
+    if not include_demo:
+        runs = research_runs(runs)
 
 df = runs.copy()
 if crop_f != "(all)" and "crop" in df:

@@ -1,0 +1,20 @@
+{
+  "classes": [
+    "Early_blight",
+    "Healthy",
+    "Late_blight",
+    "Leaf Miner",
+    "Magnesium Deficiency",
+    "Nitrogen Deficiency",
+    "Spotted Wilt Virus"
+  ],
+  "class_to_idx": {
+    "Early_blight": 0,
+    "Healthy": 1,
+    "Late_blight": 2,
+    "Leaf Miner": 3,
+    "Magnesium Deficiency": 4,
+    "Nitrogen Deficiency": 5,
+    "Spotted Wilt Virus": 6
+  }
+}

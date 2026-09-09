@@ -4,9 +4,16 @@ stratified: true
 image_size: 224
 crops:
   tomato:
-    root: data/raw/tomato
-    classes: []
-    description: Tomato leaf disease dataset (configure class names after placing data)
+    root: data/raw/tomato/Variant-a(Multiclass Classification)
+    classes:
+      - Early_blight
+      - Healthy
+      - Late_blight
+      - Leaf Miner
+      - Magnesium Deficiency
+      - Nitrogen Deficiency
+      - Spotted Wilt Virus
+    description: Tomato leaf disease dataset (Variant-a multiclass, 7 classes, pre-existing train/val/test splits)
   potato:
     root: data/raw/potato
     classes: []

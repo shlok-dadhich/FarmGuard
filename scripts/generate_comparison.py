@@ -306,6 +306,16 @@ def main():
         print("UNAVAILABLE RESULT — no runs.csv yet. Run scripts/evaluate_all.py first.")
         return
     runs = pd.read_csv(runs_csv)
+    # Research runs only: drop old demo/test smoke evaluations and mock models so
+    # reports never mix dummy results with real ones (history itself stays intact).
+    for col in ("status", "kind"):
+        if col not in runs.columns:
+            runs[col] = ""
+    runs = runs[~runs["status"].astype(str).str.lower().isin({"demo", "test"})]
+    runs = runs[~runs["kind"].astype(str).str.lower().isin({"demo", "test"})]
+    if "architecture" in runs.columns:
+        runs = runs[runs["architecture"].astype(str) != "mock_demo"]
+    runs = runs.reset_index(drop=True)
     crops = list(cfg.datasets.get("crops", {})) if a.all else ([a.crop] if a.crop else ["tomato"])
     for crop in crops:
         class_names = None

@@ -17,6 +17,7 @@ from ui.common import (
     get_model_choices,
     load_runs_table,
     model_info,
+    research_runs,
     unavailable_banner,
 )
 from ui.theme import inject
@@ -27,11 +28,12 @@ st.caption("Majority vote · soft average · validation-weighted voting. Superio
 
 crops = get_crops()
 device = get_device()
-runs = load_runs_table()
+runs = research_runs(load_runs_table())
 
 crop = st.selectbox("Crop", crops, key="ens_crop")
 choices = get_model_choices(crop)
-default = [c for c in ("resnet50", "densenet121", "mock_demo") if c in choices][:3] or choices[:3]
+# Top-3 tomato models by test macro F1 when available, otherwise the first choices.
+default = [c for c in ("tomato_regnet_y_4gf", "tomato_resnet50", "tomato_convnext_tiny") if c in choices][:3] or choices[:3]
 chosen = st.multiselect("Choose 2–3 models", choices, default=default, key="ens_models")
 w_mode = st.radio("Weighted-voting weights", ["uniform", "val macro-F1 (runs.csv)"],
                   horizontal=True, key="ens_w",
