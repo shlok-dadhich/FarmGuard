@@ -38,7 +38,7 @@ c1, c2 = st.columns([1, 2])
 with c1:
     crop = st.selectbox("Crop", crops, key="xai_crop")
     choices = get_model_choices(crop)
-    default_idx = choices.index("tomato_regnet_y_4gf") if "tomato_regnet_y_4gf" in choices else 0
+    default_idx = choices.index("tomato_efficientnet_v2_s") if "tomato_efficientnet_v2_s" in choices else 0
     key = st.selectbox("Model", choices, index=default_idx, key="xai_model")
     upload = st.file_uploader("Image", type=["jpg", "jpeg", "png", "webp", "bmp"], key="xai_upload")
     true_label = st.text_input("True label (optional, if known)", key="xai_true")

@@ -30,9 +30,27 @@ crops:
     root: data/raw/grape
     classes: []
     description: Grape leaf disease dataset
+
+  cotton:
+    root: data/raw/Cotton_data
+    classes:
+      - bacterial blight
+      - curl virus
+      - fussarium wilt
+      - healthy
+    description: Cotton leaf disease dataset (4 classes)
 preprocessing:
   resize: 256
   center_crop: 224
   mean: [0.485, 0.456, 0.406]
   std: [0.229, 0.224, 0.225]
 augmentation_version: aug-v1
+
+cotton:
+  root: data/raw/Cotton_data
+  classes:
+    - bacterial blight
+    - curl virus
+    - fussarium wilt
+    - healthy
+  description: Cotton leaf disease dataset (4 classes)

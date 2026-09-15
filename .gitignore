@@ -15,6 +15,13 @@ models/checkpoints/*.bin
 models/custom/*.pt
 models/custom/*.pth
 *.onnx
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.ckpt
+*.h5
+*.keras
 data/raw/
 !data/raw/.gitkeep
 data/splits/

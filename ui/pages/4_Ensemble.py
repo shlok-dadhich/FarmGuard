@@ -33,7 +33,7 @@ runs = research_runs(load_runs_table())
 crop = st.selectbox("Crop", crops, key="ens_crop")
 choices = get_model_choices(crop)
 # Top-3 tomato models by test macro F1 when available, otherwise the first choices.
-default = [c for c in ("tomato_regnet_y_4gf", "tomato_resnet50", "tomato_convnext_tiny") if c in choices][:3] or choices[:3]
+default = [c for c in ("tomato_efficientnet_v2_s", "tomato_densenet121", "tomato_resnet50") if c in choices][:3] or choices[:3]
 chosen = st.multiselect("Choose 2–3 models", choices, default=default, key="ens_models")
 w_mode = st.radio("Weighted-voting weights", ["uniform", "val macro-F1 (runs.csv)"],
                   horizontal=True, key="ens_w",

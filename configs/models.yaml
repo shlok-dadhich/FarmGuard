@@ -61,33 +61,56 @@ models:
     input_size: 224
     adapter: src.models.adapters.densenet:DenseNet121Adapter
     description: DenseNet-121
-  mock_demo:
-    family: mock
-    input_size: 64
-    adapter: src.models.mock:MockDemoAdapter
-    description: Tiny deterministic demo/test model. NEVER for research.
-
 # ---------------------------------------------------------------------------
-# instances:
-#   The previous tomato checkpoints were trained on the OLD 8-class dataset
-#   (Pottassium Deficiency was later removed) and have been deleted along with
-#   their metrics/outputs — they are incompatible with the current 7-class
-#   class mapping (configs/classes/tomato.yaml).
-#
-#   After retraining with training/tomato/training_colab.ipynb on the 7-class
-#   dataset, register the new checkpoints here, e.g.:
-#
-#   - id: tomato_regnet_y_8gf
-#     name: RegNetY-8GF (tomato best)
-#     architecture: regnet_y_8gf          # add a registry entry + adapter first
-#     crop: tomato
-#     checkpoint: models/checkpoints/tomato/tomato_regnet_y_8gf_best.pt
-#     classes_file: configs/classes/tomato.yaml
-#     input_size: 224
-#     target_layer: auto
-#
-#   With no instances, the app auto-discovers checkpoints under
-#   models/checkpoints/ and outputs/checkpoints/ and runs in DEMO mode when none
-#   matches the 7-class mapping.
+# Latest successful 7-class tomato runs. Explicit instances prevent the UI from
+# falling back to unregistered architectures or random/demo weights.
 # ---------------------------------------------------------------------------
-instances: []
+instances:
+  - id: tomato_efficientnet_v2_s
+    name: EfficientNetV2-S (best)
+    architecture: efficientnet_v2_s
+    crop: tomato
+    checkpoint: models/checkpoints/tomato/tomato_efficientnet_v2_s_best.pt
+    classes_file: configs/classes/tomato.yaml
+    input_size: 224
+    target_layer: auto
+  - id: tomato_densenet121
+    name: DenseNet-121
+    architecture: densenet121
+    crop: tomato
+    checkpoint: models/checkpoints/tomato/tomato_densenet121_seed42_densenet121_seed42_20260910-081532.pt
+    classes_file: configs/classes/tomato.yaml
+    input_size: 224
+    target_layer: auto
+  - id: tomato_resnet50
+    name: ResNet-50
+    architecture: resnet50
+    crop: tomato
+    checkpoint: models/checkpoints/tomato/tomato_resnet50_seed42_resnet50_seed42_20260910-052653.pt
+    classes_file: configs/classes/tomato.yaml
+    input_size: 224
+    target_layer: auto
+  - id: tomato_regnet_y_4gf
+    name: RegNetY-4GF
+    architecture: regnet_y_4gf
+    crop: tomato
+    checkpoint: models/checkpoints/tomato/tomato_regnet_y_4gf_seed42_regnet_y_4gf_seed42_20260910-071448.pt
+    classes_file: configs/classes/tomato.yaml
+    input_size: 224
+    target_layer: auto
+  - id: tomato_convnext_tiny
+    name: ConvNeXt-Tiny
+    architecture: convnext_tiny
+    crop: tomato
+    checkpoint: models/checkpoints/tomato/tomato_convnext_tiny_seed42_convnext_tiny_seed42_20260910-062014.pt
+    classes_file: configs/classes/tomato.yaml
+    input_size: 224
+    target_layer: auto
+  - id: cotton_densenet121
+    name: DenseNet-121 (Cotton)
+    architecture: densenet121
+    crop: cotton
+    checkpoint: models/checkpoints/cotton/best_densenet.pth
+    classes_file: configs/classes/cotton.yaml
+    input_size: 224
+    target_layer: auto

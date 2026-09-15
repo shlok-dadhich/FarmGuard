@@ -1,0 +1,18 @@
+{
+  "architecture": "efficientnet_v2_s",
+  "crop": "tomato",
+  "num_classes": 7,
+  "input_size": 224,
+  "seed": 42,
+  "pretrained_backbone": "ImageNet-1K",
+  "epochs": 70,
+  "batch_size": 16,
+  "learning_rate": 0.0001,
+  "weight_decay": 0.05,
+  "best_epoch": 69,
+  "best_validation_macro_f1": 0.9480113161,
+  "best_validation_accuracy": 0.9594594595,
+  "test_macro_f1": 0.9720098294,
+  "test_accuracy": 0.9787234043,
+  "run_id": "efficientnet_v2_s_seed42_20260910-042630"
+}

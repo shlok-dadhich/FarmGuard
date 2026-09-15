@@ -513,4 +513,5 @@ See `docs/end_to_end_validation.md` for the full acceptance walkthrough.
 - `docs/evaluation.md` — metrics, evaluation scripts, confusion matrices
 - `docs/experiment_tracking.md` — run schema, backends, UI comparison
 - `docs/xai.md` — Grad-CAM++, Score-CAM, Saliency, faithfulness
-- `docs/end_to_end_validation.md` — acceptance test results
+- `docs/end_to_end_validation.md` — acceptance test results
+

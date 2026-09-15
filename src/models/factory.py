@@ -34,7 +34,10 @@ def load_checkpoint_weights(module, ckpt_path: str | Path, device="cpu"):
     except Exception as e:
         raise CheckpointError(f"Could not load checkpoint {p}: {e}", "corrupt/incompatible file",
                               "HOW: verify torch version and that checkpoint is a state_dict")
-    sd = state.get("state_dict", state) if isinstance(state, dict) else state
+    if isinstance(state, dict):
+        sd = state.get("state_dict", state.get("model_state_dict", state))
+    else:
+        sd = state
     if not isinstance(sd, dict):
         raise CheckpointError(f"Checkpoint {p} has unexpected structure {type(sd)}", "not a state_dict",
                               "HOW: save checkpoints as {'state_dict': model.state_dict(), ...}")
