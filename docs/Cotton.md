@@ -148,8 +148,128 @@ The six test errors were bacterial-blight leaves predicted as healthy (4) and fu
 leaves predicted as healthy (2). No curl-virus or healthy test images were misclassified.
 
 ---
+### 5. Architectures — Screening Results
 
-## 5. Training Curves
+Before the final DenseNet-121 production training, five pretrained backbones were screened under identical training settings. Screening observations were extracted from the logged training-loss, validation-loss, validation Macro-F1, validation precision, and validation recall curves.
+
+<table>
+<tr>
+<th>#</th>
+<th>Architecture</th>
+<th>Parameters</th>
+<th>Validation Precision</th>
+<th>Validation Recall</th>
+<th>Validation Macro F1</th>
+<th>Position</th>
+</tr>
+
+<tr>
+<td>1</td>
+<td><b>DenseNet-121</b></td>
+<td>6.96 M</td>
+<td>0.978</td>
+<td>0.977</td>
+<td><b>0.975</b></td>
+<td><b>Winner</b></td>
+</tr>
+
+<tr>
+<td>2</td>
+<td>RegNetY-4GF</td>
+<td>~21 M</td>
+<td>0.977</td>
+<td>0.977</td>
+<td>0.973</td>
+<td>Runner-up</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td>EfficientNetV2-S</td>
+<td>~22 M</td>
+<td>0.973</td>
+<td>0.971</td>
+<td>0.968</td>
+<td>Third</td>
+</tr>
+
+<tr>
+<td>4</td>
+<td>ConvNeXt-Tiny</td>
+<td>~28 M</td>
+<td>0.963</td>
+<td>0.968</td>
+<td>0.956</td>
+<td>Fourth</td>
+</tr>
+
+<tr>
+<td>5</td>
+<td>ResNet-50</td>
+<td>23.5 M</td>
+<td>0.964</td>
+<td>0.962</td>
+<td>0.955</td>
+<td>Fifth</td>
+</tr>
+</table>
+
+
+- **Best overall architecture:** DenseNet-121 achieved the strongest validation Macro-F1 performance and demonstrated consistently stable optimization behaviour throughout screening.
+- **Closest competitor:** RegNetY-4GF remained extremely close to DenseNet-121 across validation loss, precision, recall, and Macro-F1 measures.
+- **Best stability:** DenseNet-121 and RegNetY-4GF exhibited the smoothest validation-loss trajectories among the screened models.
+- **Most volatile model:** ConvNeXt-Tiny demonstrated larger oscillations in validation loss, precision, and recall during training.
+- **Slowest convergence:** ResNet-50 required substantially more epochs to reach the same loss plateau achieved by the other architectures.
+
+#### 5.1 Screening Behaviour Analysis
+
+##### Training Loss
+
+DenseNet-121, EfficientNetV2-S, ConvNeXt-Tiny, and RegNetY-4GF converged rapidly during the first few epochs of training. DenseNet-121 displayed fast convergence from a moderate starting loss and quickly stabilized. ResNet-50 was the slowest model to optimize, requiring significantly more epochs before reaching the loss plateau achieved by the remaining architectures.
+
+##### Validation Loss
+
+DenseNet-121 maintained one of the smoothest and most stable validation-loss curves throughout screening. RegNetY-4GF and EfficientNetV2-S demonstrated similarly low and stable behaviour. ConvNeXt-Tiny exhibited the largest fluctuations during validation, while ResNet-50 showed a very high initial validation loss before gradually converging.
+
+##### Validation Macro-F1
+
+DenseNet-121 consistently occupied the leading validation Macro-F1 group, operating in the approximate 0.96-0.975 range for most of training. RegNetY-4GF remained close behind and behaved similarly throughout screening. EfficientNetV2-S occupied the middle of the pack, whereas ConvNeXt-Tiny and ResNet-50 generally remained below the leading models.
+
+
+
+#### 5.2 Final Production Model Results (DenseNet-121)
+
+DenseNet-121 was selected for extended production training because it combined:
+
+- Highest validation Macro-F1 during screening.
+- Stable validation-loss behaviour.
+- Fast convergence.
+- Strong parameter efficiency.
+- Excellent held-out test performance after production training.
+
+<table>
+<tr>
+<th>Architecture</th>
+<th>Params</th>
+<th>Best Val Acc</th>
+<th>Test Acc</th>
+<th>Test Macro F1</th>
+<th>Test Weighted F1</th>
+<th>Completed Epochs</th>
+</tr>
+
+<tr>
+<td><b>DenseNet-121</b></td>
+<td><b>6.96 M</b></td>
+<td><b>0.9966</b></td>
+<td><b>0.9900</b></td>
+<td><b>0.9909</b></td>
+<td><b>0.9900</b></td>
+<td><b>27</b></td>
+</tr>
+</table>
+
+## 6. Training Curves
 
 The complete training and validation curves are available at
 [`outputs/figures/cotton/training_curves.png`](../outputs/figures/cotton/training_curves.png).
@@ -171,7 +291,7 @@ accuracy result at epoch 17.
 
 ---
 
-## 6. Outputs, Logs, and Artifacts
+## 7. Outputs, Logs, and Artifacts
 
 The latest run generated the following local artifacts:
 
@@ -191,7 +311,7 @@ causes a clipping warning; the input panels should be inverse-normalized for a f
 
 ---
 
-## 7. Run History
+## 8. Run History
 
 1. The script resolved the repository root and loaded the existing cotton train, validation,
    and test folders.
@@ -203,7 +323,7 @@ causes a clipping warning; the input panels should be inverse-normalized for a f
 
 ---
 
-## 8. Reproducibility
+## 9. Reproducibility
 
 - **Code:** [`training/tomato/cotton/cotton_training.py`](../training/tomato/cotton/cotton_training.py)
 - **Dataset root:** `data/raw/Cotton_data/`
@@ -224,7 +344,7 @@ the script selects CPU for the model but the CUDA AMP configuration may require 
 
 ---
 
-## 9. Limitations and Suggested Next Steps
+## 10. Limitations and Suggested Next Steps
 
 - **No fixed seed:** repeated runs can differ because random seeds are not configured.
 - **Early-stopping record:** the script declares patience `10`, but the available log reports
