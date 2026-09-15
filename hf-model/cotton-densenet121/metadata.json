@@ -1,0 +1,10 @@
+{
+  "crop": "cotton",
+  "architecture": "densenet121",
+  "input_size": 224,
+  "checkpoint_format": "pytorch_checkpoint",
+  "test_accuracy": 0.9899665551839465,
+  "test_macro_f1": 0.9909135593510112,
+  "best_validation_accuracy": 0.9966,
+  "source_checkpoint": "models/checkpoints/cotton/best_densenet.pth"
+}
