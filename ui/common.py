@@ -36,10 +36,12 @@ def get_device() -> str:
 
 @st.cache_data(show_spinner=False)
 def get_crops() -> list:
+    supported_crops = ("tomato", "cotton")
     try:
-        return list(load_app_config().datasets.get("crops", {}).keys())
+        configured = load_app_config().datasets.get("crops", {})
+        return [crop for crop in supported_crops if crop in configured]
     except Exception:
-        return ["tomato"]
+        return list(supported_crops)
 
 
 @st.cache_data(show_spinner=False)

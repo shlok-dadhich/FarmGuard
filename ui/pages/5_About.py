@@ -35,8 +35,9 @@ st.dataframe(rows, width="stretch", hide_index=True)
 
 st.markdown("## Datasets")
 crops_cfg = cfg.datasets.get("crops", {})
-drows = [{"crop": c, "root": (v or {}).get("root", "?"), "notes": (v or {}).get("description", "")}
-         for c, v in crops_cfg.items()]
+drows = [{"crop": c, "root": (crops_cfg.get(c) or {}).get("root", "?"),
+          "notes": (crops_cfg.get(c) or {}).get("description", "")}
+         for c in get_crops()]
 st.dataframe(drows, width="stretch", hide_index=True)
 manifests = dataset_info()
 if manifests:
